@@ -14,10 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-/**
- * AuthController - Handles authentication endpoints
- * Manages user login and registration for BarLoyalty system
- */
 @Slf4j
 @RequiredArgsConstructor
 @RestController
@@ -27,16 +23,10 @@ public class AuthController {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Login endpoint - Authenticates user with username and password
-     * @param loginRequest Contains username and password
-     * @return User details if authentication successful, 401 if failed
-     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         log.info("Login attempt for user: {}", loginRequest.getUsername());
 
-        // Find user by username
         Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
 
         if (user.isEmpty()) {
@@ -45,7 +35,6 @@ public class AuthController {
                     .body(createErrorResponse("Invalid username or password"));
         }
 
-        // Validate password
         User foundUser = user.get();
         if (!passwordEncoder.matches(loginRequest.getPassword(), foundUser.getPassword())) {
             log.warn("Login failed: Invalid password for user - {}", loginRequest.getUsername());
@@ -57,27 +46,20 @@ public class AuthController {
         return ResponseEntity.ok(createLoginResponse(foundUser));
     }
 
-    /**
-     * Register endpoint - Creates a new user account
-     * @param loginRequest Contains username and password for new account
-     * @return Created user details if successful, 409 if user already exists
-     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody LoginRequest loginRequest) {
         log.info("Registration attempt for user: {}", loginRequest.getUsername());
 
-        // Check if user already exists
         if (userRepository.findByUsername(loginRequest.getUsername()).isPresent()) {
             log.warn("Registration failed: User already exists - {}", loginRequest.getUsername());
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(createErrorResponse("Username already exists"));
         }
 
-        // Create new user
         User newUser = new User();
         newUser.setUsername(loginRequest.getUsername());
         newUser.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
-        newUser.setEmail(loginRequest.getUsername() + "@barloyalty.com"); // Default email
+        newUser.setEmail(loginRequest.getUsername() + "@barloyalty.com");
         newUser.setRole("USER");
         newUser.setPointsBalance(0L);
 
@@ -88,9 +70,6 @@ public class AuthController {
                 .body(createLoginResponse(savedUser));
     }
 
-    /**
-     * Create success response with user details
-     */
     private Map<String, Object> createLoginResponse(User user) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -105,9 +84,6 @@ public class AuthController {
         return response;
     }
 
-    /**
-     * Create error response
-     */
     private Map<String, Object> createErrorResponse(String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);

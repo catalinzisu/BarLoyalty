@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -14,6 +16,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     /**
      * Configure the SecurityFilterChain with modern Spring Security 6 approach
      * - CSRF disabled for stateless API
@@ -22,9 +29,10 @@ public class SecurityConfig {
      * - HTTP Basic authentication for other endpoints
      */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
+        try {
+            http
+            .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(request -> null)) // CORS configuration handled by CorsConfig
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
@@ -35,7 +43,10 @@ public class SecurityConfig {
             )
             .httpBasic(basic -> {});
 
-        return http.build();
+            return http.build();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to configure security filter chain", e);
+        }
     }
 }
 
