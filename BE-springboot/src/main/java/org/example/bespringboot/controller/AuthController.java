@@ -1,0 +1,443 @@
+
+package org.example.bespringboot.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.entity.Bar;
+import org.example.bespringboot.entity.Reward;
+import org.example.bespringboot.repository.BarRepository;
+import org.example.bespringboot.repository.RewardRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+/**
+ * BarController - Handles bar-related endpoints
+ * Provides access to bars and their associated rewards
+ */
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/bars")
+public class BarController {
+
+    private final BarRepository barRepository;
+    private final RewardRepository rewardRepository;
+
+
+@return List of all bars in the system*/@GetMapping
+public ResponseEntity<List<Bar>> getAllBars() {
+    log.info("Fetching all bars");
+    List<Bar> bars = barRepository.findAll();
+    log.info("Found {} bars", bars.size());
+    return ResponseEntity.ok(bars);}
+
+    /**
+
+Get rewards for a specific bar
+@param barId Bar ID
+@return List of rewards for the specified bar*/
+@GetMapping("/{barId}/rewards")
+public ResponseEntity<List<Reward>> getBarRewards(@PathVariable Long barId) {
+    log.info("Fetching rewards for bar: {}", barId);
+
+        // Verify bar exists
+        if (!barRepository.existsById(barId)) {
+            log.warn("Bar not found with id: {}", barId);
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Reward> rewards = rewardRepository.findByBarId(barId);
+        log.info("Found {} rewards for bar: {}", rewards.size(), barId);
+        return ResponseEntity.ok(rewards);
+    }
+}
+package org.example.bespringboot.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.entity.Bar;
+import org.example.bespringboot.entity.Reward;
+import org.example.bespringboot.repository.BarRepository;
+import org.example.bespringboot.repository.RewardRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+/**
+ * BarController - Handles bar-related endpoints
+ * Provides access to bars and their associated rewards
+ */
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/bars")
+public class BarController {
+
+    private final BarRepository barRepository;
+    private final RewardRepository rewardRepository;
+
+    /**
+     * Get all bars
+     * @return List of all bars in the system
+     */
+    @GetMapping
+    public ResponseEntity<List<Bar>> getAllBars() {
+        log.info("Fetching all bars");
+        List<Bar> bars = barRepository.findAll();
+        log.info("Found {} bars", bars.size());
+        return ResponseEntity.ok(bars);
+    }
+
+    /**
+     * Get rewards for a specific bar
+     * @param barId Bar ID
+     * @return List of rewards for the specified bar
+     */
+    @GetMapping("/{barId}/rewards")
+    public ResponseEntity<List<Reward>> getBarRewards(@PathVariable Long barId) {
+        log.info("Fetching rewards for bar: {}", barId);
+
+        // Verify bar exists
+        if (!barRepository.existsById(barId)) {
+            log.warn("Bar not found with id: {}", barId);
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Reward> rewards = rewardRepository.findByBarId(barId);
+        log.info("Found {} rewards for bar: {}", rewards.size(), barId);
+        return ResponseEntity.ok(rewards);
+    }
+}
+package org.example.bespringboot.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.entity.Bar;
+import org.example.bespringboot.entity.Reward;
+import org.example.bespringboot.repository.BarRepository;
+import org.example.bespringboot.repository.RewardRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+
+/**
+ * BarController - Handles bar-related endpoints
+ * Provides access to bars and their associated rewards
+ */
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/bars")
+public class BarController {
+
+    private final BarRepository barRepository;
+    private final RewardRepository rewardRepository;
+
+    /**
+     * Get all bars
+     * @return List of all bars in the system
+     */
+    @GetMapping
+    public ResponseEntity<List<Bar>> getAllBars() {
+        log.info("Fetching all bars");
+        List<Bar> bars = barRepository.findAll();
+        log.info("Found {} bars", bars.size());
+        return ResponseEntity.ok(bars);
+    }
+
+    /**
+     * Get rewards for a specific bar
+     * @param barId Bar ID
+     * @return List of rewards for the specified bar
+     */
+    @GetMapping("/{barId}/rewards")
+    public ResponseEntity<List<Reward>> getBarRewards(@PathVariable Long barId) {
+        log.info("Fetching rewards for bar: {}", barId);
+
+        // Verify bar exists
+        if (!barRepository.existsById(barId)) {
+            log.warn("Bar not found with id: {}", barId);
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Reward> rewards = rewardRepository.findByBarId(barId);
+        log.info("Found {} rewards for bar: {}", rewards.size(), barId);
+        return ResponseEntity.ok(rewards);
+    }
+}
+package org.example.bespringboot.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * LoginRequest DTO
+ * Used to receive login credentials from frontend
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class LoginRequest {
+    private String username;
+    private String password;
+}
+package org.example.bespringboot.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * QrResponse DTO
+ * Maps Python microservice QR code generation response
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class QrResponse {
+    @JsonProperty("qr_code_base64")
+    private String qrCodeBase64;
+
+    @JsonProperty("hash")
+    private String hash;
+}
+package org.example.bespringboot.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * TransactionRequest DTO
+ * Used to receive transaction data from frontend
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TransactionRequest {
+    private Long userId;
+    private Long barId;
+    private Long amount;
+}
+
+package org.example.bespringboot.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.dto.LoginRequest;
+import org.example.bespringboot.entity.User;
+import org.example.bespringboot.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * AuthController - Handles authentication endpoints
+ * Manages user login and registration for BarLoyalty system
+ */
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    /**
+     * Login endpoint - Authenticates user with username and password
+     * @param loginRequest Contains username and password
+     * @return User details if authentication successful, 401 if failed
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        log.info("Login attempt for user: {}", loginRequest.getUsername());
+
+        // Find user by username
+        Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
+
+        if (user.isEmpty()) {
+            log.warn("Login failed: User not found - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Invalid username or password"));
+        }
+
+        // Validate password
+        User foundUser = user.get();
+        if (!passwordEncoder.matches(loginRequest.getPassword(), foundUser.getPassword())) {
+            log.warn("Login failed: Invalid password for user - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Invalid username or password"));
+        }
+
+        log.info("Login successful for user: {}", loginRequest.getUsername());
+        return ResponseEntity.ok(createLoginResponse(foundUser));
+    }
+
+    /**
+     * Register endpoint - Creates a new user account
+     * @param loginRequest Contains username and password for new account
+     * @return Created user details if successful, 409 if user already exists
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody LoginRequest loginRequest) {
+        log.info("Registration attempt for user: {}", loginRequest.getUsername());
+
+        // Check if user already exists
+        if (userRepository.findByUsername(loginRequest.getUsername()).isPresent()) {
+            log.warn("Registration failed: User already exists - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(createErrorResponse("Username already exists"));
+        }
+
+        // Create new user
+        User newUser = new User();
+        newUser.setUsername(loginRequest.getUsername());
+        newUser.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
+        newUser.setEmail(loginRequest.getUsername() + "@barloyalty.com"); // Default email
+        newUser.setRole("USER");
+        newUser.setPointsBalance(0L);
+
+        User savedUser = userRepository.save(newUser);
+        log.info("User registered successfully: {}", loginRequest.getUsername());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(createLoginResponse(savedUser));
+    }
+
+    /**
+     * Create success response with user details
+     */
+    private Map<String, Object> createLoginResponse(User user) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Authentication successful");
+        response.put("user", Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+
+package org.example.bespringboot.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.dto.LoginRequest;
+import org.example.bespringboot.entity.User;
+import org.example.bespringboot.repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+/**
+ * AuthController - Handles authentication endpoints
+ * Manages user login and registration for BarLoyalty system
+ */
+@Slf4j
+@RequiredArgsConstructor
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    /**
+     * Login endpoint - Authenticates user with username and password
+     * @param loginRequest Contains username and password
+     * @return User details if authentication successful, 401 if failed
+     */
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        log.info("Login attempt for user: {}", loginRequest.getUsername());
+
+        // Find user by username
+        Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
+
+        if (user.isEmpty()) {
+            log.warn("Login failed: User not found - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Invalid username or password"));
+        }
+
+        // Validate password
+        User foundUser = user.get();
+        if (!passwordEncoder.matches(loginRequest.getPassword(), foundUser.getPassword())) {
+            log.warn("Login failed: Invalid password for user - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createErrorResponse("Invalid username or password"));
+        }
+
+        log.info("Login successful for user: {}", loginRequest.getUsername());
+        return ResponseEntity.ok(createLoginResponse(foundUser));
+    }
+
+    /**
+     * Register endpoint - Creates a new user account
+     * @param loginRequest Contains username and password for new account
+     * @return Created user details if successful, 409 if user already exists
+     */
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody LoginRequest loginRequest) {
+        log.info("Registration attempt for user: {}", loginRequest.getUsername());
+
+        // Check if user already exists
+        if (userRepository.findByUsername(loginRequest.getUsername()).isPresent()) {
+            log.warn("Registration failed: User already exists - {}", loginRequest.getUsername());
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(createErrorResponse("Username already exists"));
+        }
+
+        // Create new user
+        User newUser = new User();
+        newUser.setUsername(loginRequest.getUsername());
+        newUser.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
+        newUser.setEmail(loginRequest.getUsername() + "@barloyalty.com"); // Default email
+        newUser.setRole("USER");
+        newUser.setPointsBalance(0L);
+
+        User savedUser = userRepository.save(newUser);
+        log.info("User registered successfully: {}", loginRequest.getUsername());
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(createLoginResponse(savedUser));
+    }
+
+    /**
+     * Create success response with user details
+     */
+    private Map<String, Object> createLoginResponse(User user) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Authentication successful");
+        response.put("user", Map.of(
+                "id", user.getId(),
+                "username", user.getUsername(),
+                "email", user.getEmail(),
+                "role", user.getRole(),
+                "pointsBalance", user.getPointsBalance()
+        ));
+        return response;
+    }
+
+    /**
+     * Create error response
+     */
+    private Map<String, Object> createErrorResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return response;
+    }
+}
