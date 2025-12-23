@@ -1,0 +1,69 @@
+# ========================
+# 1. JAVA & SPRING BOOT
+# ========================
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/wrapper/maven-wrapper.properties
+
+# ========================
+# 2. PYTHON
+# ========================
+__pycache__/
+*.py[cod]
+*$py.class
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# ========================
+# 3. ANGULAR & NODE.JS
+# ========================
+node_modules/
+dist/
+.angular/
+package-lock.json   # (Opțional: mulți îl păstrează, dar la proiecte mici poate fi ignorat dacă face conflicte)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# 4. IDE & EDITORS (IntelliJ, PyCharm, VSCode)
+# ========================
+.idea/
+*.iml
+.vscode/
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.swp
+
+# ========================
+# 5. OS FILES (Mac/Windows garbage)
+# ========================
+.DS_Store
+Thumbs.db
+
+# ========================
+# 6. DOCKER & SECRETS (FOARTE IMPORTANT!)
+# ========================
+# Ignorăm fișierele cu variabile de mediu care conțin parole
+.env
+.env.local
+.env.*.local
+
+# Dacă ai log-uri de la containere
+docker-logs/
+
+# ========================
+# 7. POSTGRES
+# ========================
+# Ignorăm datele efective dacă ai mapat un volum local în proiect (bad practice, dar se întâmplă)
+pgdata/
+postgres-data/
