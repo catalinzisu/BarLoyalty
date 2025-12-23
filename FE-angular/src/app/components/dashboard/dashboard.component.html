@@ -1,12 +1,11 @@
 <div class="container-fluid py-4">
-  <!-- Header -->
   <div class="row mb-4">
     <div class="col-md-8">
-      <div class="card bg-primary text-white">
+      <div class="card" style="background: linear-gradient(135deg, #1a3a6e 0%, #0f1f3c 100%); border: none;">
         <div class="card-body">
-          <h2 class="card-title mb-0">Welcome, {{ user?.username }}!</h2>
-          <p class="card-text mb-0 mt-2 fs-6">Your current balance:</p>
-          <h1 class="display-4 mb-0" style="font-weight: bold;">{{ pointsBalance }} Points</h1>
+          <h2 class="card-title mb-0" style="color: #ffffff;">Welcome, {{ user?.username }}!</h2>
+          <p class="card-text mb-0 mt-2 fs-6" style="color: #b0d0ff;">Your current balance:</p>
+          <h1 class="display-4 mb-0" style="font-weight: bold; color: #64b5f6;">{{ pointsBalance }} Points</h1>
         </div>
       </div>
     </div>
@@ -17,7 +16,6 @@
     </div>
   </div>
 
-  <!-- Messages -->
   <div class="row mb-4">
     <div class="col-md-12">
       <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -32,7 +30,40 @@
     </div>
   </div>
 
-  <!-- Loading State -->
+  <div *ngIf="lastTransaction" class="row mb-4">
+    <div class="col-md-12">
+      <div 
+        class="card border-success shadow-lg" 
+        style="background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-width: 2px;"
+      >
+        <div class="card-body text-center">
+          <h4 class="card-title text-success mb-3" style="font-weight: bold; font-size: 1.5rem;">
+            ✓ Payment Successful!
+          </h4>
+          <p class="card-text text-success mb-3" style="font-size: 1.2rem;">
+            <strong>Points Earned: +{{ lastTransaction.pointsEarned }}</strong>
+          </p>
+          
+          <div class="mb-4" style="display: flex; justify-content: center;">
+            <img 
+              [src]="'data:image/png;base64,' + lastTransaction.qrCodeImage" 
+              alt="Payment QR Code"
+              style="max-width: 300px; border: 2px solid #28a745; border-radius: 8px; padding: 10px; background: white;"
+            />
+          </div>
+          
+          <button 
+            class="btn btn-success btn-lg" 
+            (click)="lastTransaction = null"
+            style="border-radius: 8px; padding: 10px 40px; font-weight: 600;"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div *ngIf="isLoading" class="row">
     <div class="col-md-12 text-center">
       <div class="spinner-border text-primary" role="status">
@@ -42,21 +73,20 @@
     </div>
   </div>
 
-  <!-- Bars Grid -->
   <div *ngIf="!isLoading" class="row">
     <div class="col-md-12 mb-3">
-      <h3 class="text-dark">Available Bars</h3>
+      <h3 style="color: #FFFFFF; font-weight: 600;">Available Bars</h3>
     </div>
 
     <div *ngFor="let bar of bars" class="col-md-4 col-sm-6 mb-4">
-      <div class="card h-100 shadow-sm">
+      <div class="card bar-card h-100 shadow-sm">
         <div class="card-body d-flex flex-column">
-          <h5 class="card-title text-dark">{{ bar.name }}</h5>
-          <p class="card-text text-muted flex-grow-1">
+          <h5 class="card-title bar-name">{{ bar.name }}</h5>
+          <p class="card-text bar-location" style="flex-grow: 1;">
             Tap to scan QR code and earn points
           </p>
           <div class="mt-auto">
-            <p class="text-success fw-bold mb-3">Earn 50 RON in points</p>
+            <p style="color: #E0E0E0; font-weight: bold; margin-bottom: 1rem;">Earn 50 RON in points</p>
             <button
               class="btn btn-success w-100 btn-lg"
               (click)="onPayClick(bar)"
@@ -73,7 +103,6 @@
       </div>
     </div>
 
-    <!-- Empty State -->
     <div *ngIf="bars.length === 0" class="col-md-12">
       <div class="alert alert-info" role="alert">
         No bars available at the moment.

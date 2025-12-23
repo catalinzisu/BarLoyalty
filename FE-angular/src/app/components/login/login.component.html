@@ -3,13 +3,11 @@
     <h1 class="text-center mb-4 text-primary">Bar Loyalty</h1>
     
     <form (ngSubmit)="onSubmit()" #loginForm="ngForm">
-      <!-- Error Message -->
       <div *ngIf="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ errorMessage }}
         <button type="button" class="btn-close" (click)="errorMessage = ''" aria-label="Close"></button>
       </div>
 
-      <!-- Username Field -->
       <div class="mb-3">
         <label for="username" class="form-label">Username</label>
         <input
@@ -24,7 +22,6 @@
         />
       </div>
 
-      <!-- Password Field -->
       <div class="mb-3">
         <label for="password" class="form-label">Password</label>
         <input
@@ -39,7 +36,6 @@
         />
       </div>
 
-      <!-- Submit Button -->
       <button
         type="submit"
         class="btn btn-primary w-100"

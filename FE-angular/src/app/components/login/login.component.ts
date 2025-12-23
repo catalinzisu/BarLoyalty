@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { LoginRequest } from '../../models';
 
 @Component({
@@ -20,6 +21,7 @@ export class LoginComponent {
 
   constructor(
     private apiService: ApiService,
+    private authService: AuthService,
     private router: Router
   ) {}
 
@@ -32,24 +34,26 @@ export class LoginComponent {
     this.isLoading = true;
     this.errorMessage = '';
 
-    const loginRequest: LoginRequest = {
-      username: this.username,
-      password: this.password
-    };
-
-    this.apiService.login(loginRequest).subscribe({
+    this.authService.login(this.username, this.password).subscribe({
       next: (response) => {
-        // Save user data to localStorage
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('token', response.token);
+        console.log('[Login] Login successful for user:', this.username);
+        
+        this.authService.storeCredentials(
+          response.user.id,
+          this.username,
+          this.password,
+          response.token
+        );
 
-        // Redirect to dashboard
+        localStorage.setItem('user', JSON.stringify(response.user));
+
+        console.log('[Login] Credentials stored, redirecting to dashboard');
         this.router.navigate(['/dashboard']);
       },
       error: (error) => {
         this.isLoading = false;
         this.errorMessage = error.error?.message || 'Login failed. Please try again.';
-        console.error('Login error:', error);
+        console.error('[Login] Login error:', error);
       }
     });
   }

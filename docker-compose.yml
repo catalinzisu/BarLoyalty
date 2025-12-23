@@ -1,0 +1,65 @@
+services:
+  # 1. Baza de date
+  postgres:
+    image: postgres:15-alpine
+    container_name: bar-postgres
+    environment:
+      POSTGRES_DB: barloyalty
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    networks:
+      - bar-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Microserviciul Python
+  backend-python:
+    build: ./BE-python
+    container_name: bar-python
+    ports:
+      - "5000:5000"
+    networks:
+      - bar-network
+
+  # 3. Backend Spring Boot
+  backend-spring:
+    build: ./BE-springboot
+    container_name: bar-spring
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=barloyalty
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - PYTHON_MICROSERVICE_URL=http://backend-python:5000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend-python:
+        condition: service_started
+    networks:
+      - bar-network
+
+  # 4. Frontend Angular
+  frontend-angular:
+    build: ./FE-angular
+    container_name: bar-angular
+    ports:
+      - "80:80"
+    depends_on:
+      - backend-spring
+    networks:
+      - bar-network
+
+networks:
+  bar-network:
+    driver: bridge

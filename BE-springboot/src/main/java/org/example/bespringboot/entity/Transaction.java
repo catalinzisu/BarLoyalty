@@ -4,10 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
-/**
- * Transaction Entity - Represents a loyalty transaction (QR code scan)
- * Maps to 'transactions' table in PostgreSQL
- */
 @Data
 @Entity
 @Table(name = "transactions")
@@ -34,9 +30,16 @@ public class Transaction {
     @Column
     private String qrCodeHash;
 
+    @Transient
+    private String qrCodeImage;
+
     @Column(nullable = false)
     private String status = "PENDING";
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    public void setQrCodeImage(String qrCodeImage) {
+        this.qrCodeImage = qrCodeImage;
+    }
 }

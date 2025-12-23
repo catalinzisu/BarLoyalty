@@ -54,11 +54,15 @@ public class TransactionService {
             QrResponse qrResponse = callPythonMicroservice(user.getId(), request.getAmount());
 
             savedTransaction.setQrCodeHash(qrResponse.getHash());
+
             Long pointsEarned = request.getAmount();
             savedTransaction.setPointsEarned(pointsEarned);
             savedTransaction.setStatus("COMPLETED");
+
             savedTransaction = transactionRepository.save(savedTransaction);
             log.info("Transaction completed with hash: {}", qrResponse.getHash());
+
+            savedTransaction.setQrCodeImage(qrResponse.getQrCodeBase64());
 
             user.setPointsBalance(user.getPointsBalance() + pointsEarned);
             userRepository.save(user);
