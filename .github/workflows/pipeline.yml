@@ -37,7 +37,7 @@ jobs:
         run: mvn test
 
       - name: Upload Spring Boot artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: spring-boot-jar
           path: ./BE-springboot/target/*.jar
@@ -205,6 +205,9 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     name: Security Scanning
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -218,7 +221,7 @@ jobs:
           output: "trivy-results.sarif"
 
       - name: Upload Trivy results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+        uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: "trivy-results.sarif"
