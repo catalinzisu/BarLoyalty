@@ -329,6 +329,12 @@ The application includes a complete observability stack for monitoring, logging,
 - Scrape interval: Configurable in `observability/prometheus.yml`
 - Retention: Default 15 days
 
+### **Custom Metrics**
+
+- **transactions.total** - Total number of completed transactions (Counter)
+  - Incremented each time a transaction is successfully processed
+  - Accessible via: `http://localhost:8080/actuator/prometheus`
+
 ### **Visualization**
 
 - **Grafana** dashboards display metrics and logs
