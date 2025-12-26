@@ -44,7 +44,7 @@ The application follows a **microservices architecture** with the following laye
 ├─────────────────────────────────────────────────┤
 │  ┌─────────────────────┐  ┌──────────────────┐ │
 │  │  Spring Boot API    │  │  Python Service  │ │
-│  │  (Java Backend)     │  │  (AI/Analytics)  │ │
+│  │  (Java Backend)     │  │  (     QR      )  │ │
 │  └─────────────────────┘  └──────────────────┘ │
 ├─────────────────────────────────────────────────┤
 │          PostgreSQL Database                    │
