@@ -5,12 +5,12 @@ DROP TABLE IF EXISTS users CASCADE;
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE, -- Am scos NOT NULL ca sa nu crape la register
+    username VARCHAR(50) UNIQUE,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     role VARCHAR(20) NOT NULL,
-    firstname VARCHAR(255),     -- <--- COLOANA NOUA
-    lastname VARCHAR(255),      -- <--- COLOANA NOUA
+    firstname VARCHAR(255),
+    lastname VARCHAR(255),
     points_balance INT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -44,7 +44,12 @@ CREATE TABLE transactions (
     CONSTRAINT fk_bar_trx FOREIGN KEY (bar_id) REFERENCES bars(id) ON DELETE SET NULL
 );
 
--- USER DE TEST (parola: password)
-INSERT INTO users (email, password, role, firstname, lastname, points_balance) VALUES
-('dev@student.tuiasi.ro', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_CLIENT', 'Student', 'Test', 50)
-ON CONFLICT (email) DO NOTHING;
+-- INSERARE DATE (SEED) - Cerința: 2 Baruri și 2 Clienți
+INSERT INTO bars (name, location) VALUES 
+('Old Town Pub', 'Centru, Str. Lapusneanu'),
+('Sky Bar', 'Etajul 10, Palas');
+
+-- Parolele sunt criptate cu BCrypt (valoare: password)
+INSERT INTO users (username, email, password, role, firstname, lastname, points_balance) VALUES
+('student_dev', 'dev@student.tuiasi.ro', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_CLIENT', 'Student', 'Test', 50),
+('client_premium', 'client@tuiasi.ro', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_CLIENT', 'Ion', 'Popescu', 100);
