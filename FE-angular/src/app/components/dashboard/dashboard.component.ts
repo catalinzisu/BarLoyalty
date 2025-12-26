@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
-import { Bar, User, TransactionRequest } from '../../models';
+import { Bar, User, TransactionRequest, Reward } from '../../models';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -24,6 +24,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   errorMessage: string = '';
   successMessage: string = '';
   lastTransaction: any = null;
+  selectedReward: Reward | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -55,22 +56,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('[Dashboard] Fetching real balance from database for userId:', userId);
-    this.http.get<any>(`http://localhost:8080/api/users/${userId}`)
+    // Fetch fresh balance from database
+    console.log('[Dashboard] Fetching fresh user data from database for userId:', userId);
+    this.apiService.getCurrentUserProfile(userId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (response) => {
-          console.log('[Dashboard] Balance fetched from database:', response.pointsBalance);
-          this.pointsBalance = response.pointsBalance;
-          this.apiService.setPointsBalance(response.pointsBalance);
+        next: (userProfile) => {
+          console.log('[Dashboard] User profile fetched from database:', userProfile);
+          console.log('[Dashboard] Points balance from DB:', userProfile.pointsBalance);
+          
+          // Update local balance
+          this.pointsBalance = userProfile.pointsBalance;
+          
+          // Sync balance with ApiService signal/subject
+          this.apiService.setPointsBalance(userProfile.pointsBalance);
+          
           console.log('[Dashboard] Balance synchronized from database:', this.pointsBalance);
         },
         error: (error) => {
-          console.error('[Dashboard] Failed to fetch balance from database:', error.status, error.message);
-          this.errorMessage = 'Failed to sync balance. Please refresh or login again.';
+          // CRITICAL: Just log the error, do NOT logout or redirect
+          // This prevents users from being kicked out on temporary glitches
+          console.error('[Dashboard] Failed to fetch user profile from database');
+          console.error('[Dashboard] Error status:', error.status);
+          console.error('[Dashboard] Error statusText:', error.statusText);
+          console.error('[Dashboard] Error message:', error.message);
+          console.error('[Dashboard] Full error:', error);
+          
+          // Log the issue but let the app continue working with cached balance
+          console.warn('[Dashboard] Continuing with cached balance data. Balance may not be up-to-date.');
+          console.warn('[Dashboard] The app is continuing to work, but balance sync failed.');
         }
       });
 
+    // Subscribe to WebSocket balance updates
     this.apiService.pointsBalance$
       .pipe(takeUntil(this.destroy$))
       .subscribe((balance) => {
@@ -78,6 +96,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.pointsBalance = balance;
       });
 
+    // Load dashboard data (bars list)
     this.loadDashboardData(userId);
   }
 
@@ -164,6 +183,48 @@ export class DashboardComponent implements OnInit, OnDestroy {
           console.error('[Dashboard] Payment error:', error);
         }
       });
+  }
+
+  onRedeemReward(bar: Bar, reward: Reward): void {
+    const currentUserJson = localStorage.getItem('currentUser');
+    if (!currentUserJson) {
+      this.errorMessage = 'User not found. Please login again.';
+      return;
+    }
+
+    if (this.pointsBalance < reward.pointsCost) {
+      this.errorMessage = `You need ${reward.pointsCost - this.pointsBalance} more points to redeem this reward.`;
+      return;
+    }
+
+    let userId: number;
+    try {
+      const currentUser = JSON.parse(currentUserJson);
+      userId = currentUser.id;
+    } catch (error) {
+      console.error('[Dashboard] Error parsing currentUser:', error);
+      this.errorMessage = 'User not found. Please login again.';
+      return;
+    }
+
+    this.isProcessing = true;
+    this.selectedReward = reward;
+    this.successMessage = '';
+    this.errorMessage = '';
+
+    console.log('[Dashboard] Redeeming reward:', reward.name, 'for user:', userId);
+
+    // TODO: Call backend API to redeem the reward
+    // This would be something like: this.apiService.redeemReward(userId, reward.id)
+    // For now, we'll just simulate the redemption
+    setTimeout(() => {
+      this.isProcessing = false;
+      this.selectedReward = null;
+      this.pointsBalance -= reward.pointsCost;
+      this.successMessage = `Successfully redeemed ${reward.name}!`;
+      this.apiService.setPointsBalance(this.pointsBalance);
+      console.log('[Dashboard] Reward redeemed successfully');
+    }, 1000);
   }
 
   onLogout(): void {

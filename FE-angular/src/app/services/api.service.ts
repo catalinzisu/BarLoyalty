@@ -9,6 +9,7 @@ import { User, Bar, TransactionRequest, LoginRequest, LoginResponse } from '../m
   providedIn: 'root'
 })
 export class ApiService {
+  // Base URL without version - we'll handle versioning per endpoint
   private readonly API_BASE_URL = 'http://localhost:8080/api';
   private readonly WS_URL = 'http://localhost:8080/ws';
 
@@ -24,24 +25,33 @@ export class ApiService {
 
   constructor(private http: HttpClient) {}
 
+  // Auth endpoints use /v1
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.API_BASE_URL}/auth/login`, request);
+    const url = `${this.API_BASE_URL}/v1/auth/login`;
+    console.log('[ApiService] Login endpoint:', url);
+    return this.http.post<LoginResponse>(url, request);
   }
 
+  // Users endpoint uses /v1
   getCurrentUserProfile(userId: number): Observable<User> {
-    const url = `${this.API_BASE_URL}/users/${userId}`;
-    console.log('Fetching user profile from:', url);
-    console.log('Token available:', !!localStorage.getItem('token'));
-    console.log('Credentials available:', !!localStorage.getItem('credentials'));
+    const url = `${this.API_BASE_URL}/v1/users/${userId}`;
+    console.log('[ApiService] Get user profile from:', url);
+    console.log('[ApiService] Token available:', !!localStorage.getItem('token'));
     return this.http.get<User>(url);
   }
 
+  // Bars endpoint does NOT use /v1
   getBars(): Observable<Bar[]> {
-    return this.http.get<Bar[]>(`${this.API_BASE_URL}/bars`);
+    const url = `${this.API_BASE_URL}/bars`;
+    console.log('[ApiService] Get bars from:', url);
+    return this.http.get<Bar[]>(url);
   }
 
+  // Transactions endpoint does NOT use /v1
   createTransaction(request: TransactionRequest): Observable<any> {
-    return this.http.post(`${this.API_BASE_URL}/transactions`, request);
+    const url = `${this.API_BASE_URL}/transactions`;
+    console.log('[ApiService] Create transaction at:', url);
+    return this.http.post(url, request);
   }
 
   connectWebSocket(userId: number): void {

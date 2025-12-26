@@ -4,9 +4,16 @@ export interface User {
   pointsBalance: number;
 }
 
+export interface Reward {
+  id: number;
+  name: string;
+  pointsCost: number;
+}
+
 export interface Bar {
   id: number;
   name: string;
+  rewards?: Reward[];
 }
 
 export interface TransactionRequest {
@@ -21,6 +28,21 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  token: string;
+  userId: number;
+  username: string;
+  email: string;
+  role: string;
+}
+
+export interface RegisterRequest {
+  firstname: string;
+  lastname: string;
+  email: string;
+  password: string;
+}
+
+export interface RegisterResponse {
   user: User;
   token: string;
 }

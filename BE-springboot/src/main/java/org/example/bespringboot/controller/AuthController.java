@@ -2,92 +2,64 @@ package org.example.bespringboot.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.bespringboot.dto.AuthenticationResponse;
 import org.example.bespringboot.dto.LoginRequest;
-import org.example.bespringboot.entity.User;
-import org.example.bespringboot.repository.UserRepository;
+import org.example.bespringboot.dto.RegisterRequest;
+import org.example.bespringboot.service.AuthenticationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
+/**
+ * Authentication Controller
+ * Handles user login and registration endpoints
+ */
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
+@CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationService authenticationService;
 
+    /**
+     * POST /api/auth/login
+     * Authenticate user with username/email and password
+     */
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        log.info("Login attempt for user: {}", loginRequest.getUsername());
-
-        Optional<User> user = userRepository.findByUsername(loginRequest.getUsername());
-
-        if (user.isEmpty()) {
-            log.warn("Login failed: User not found - {}", loginRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(createErrorResponse("Invalid username or password"));
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            log.info("Login attempt for user: {}", loginRequest.getUsername());
+            AuthenticationResponse response = authenticationService.authenticate(loginRequest);
+            log.info("Login successful for user: {}", loginRequest.getUsername());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Login failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        } catch (Exception e) {
+            log.error("Login error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        User foundUser = user.get();
-        if (!passwordEncoder.matches(loginRequest.getPassword(), foundUser.getPassword())) {
-            log.warn("Login failed: Invalid password for user - {}", loginRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(createErrorResponse("Invalid username or password"));
-        }
-
-        log.info("Login successful for user: {}", loginRequest.getUsername());
-        return ResponseEntity.ok(createLoginResponse(foundUser));
     }
 
+    /**
+     * POST /api/auth/register
+     * Register a new user with email, password, and personal information
+     */
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody LoginRequest loginRequest) {
-        log.info("Registration attempt for user: {}", loginRequest.getUsername());
-
-        if (userRepository.findByUsername(loginRequest.getUsername()).isPresent()) {
-            log.warn("Registration failed: User already exists - {}", loginRequest.getUsername());
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(createErrorResponse("Username already exists"));
+    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest registerRequest) {
+        try {
+            log.info("Registration attempt for email: {}", registerRequest.getEmail());
+            AuthenticationResponse response = authenticationService.register(registerRequest);
+            log.info("Registration successful for email: {}", registerRequest.getEmail());
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (IllegalArgumentException e) {
+            log.warn("Registration failed: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (Exception e) {
+            log.error("Registration error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-
-        User newUser = new User();
-        newUser.setUsername(loginRequest.getUsername());
-        newUser.setPassword(passwordEncoder.encode(loginRequest.getPassword()));
-        newUser.setEmail(loginRequest.getUsername() + "@barloyalty.com");
-        newUser.setRole("USER");
-        newUser.setPointsBalance(0L);
-
-        User savedUser = userRepository.save(newUser);
-        log.info("User registered successfully: {}", loginRequest.getUsername());
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(createLoginResponse(savedUser));
-    }
-
-    private Map<String, Object> createLoginResponse(User user) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", "Authentication successful");
-        response.put("user", Map.of(
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "email", user.getEmail(),
-                "role", user.getRole(),
-                "pointsBalance", user.getPointsBalance()
-        ));
-        return response;
-    }
-
-    private Map<String, Object> createErrorResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return response;
     }
 }

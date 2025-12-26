@@ -85,7 +85,33 @@
           <p class="card-text bar-location" style="flex-grow: 1;">
             Tap to scan QR code and earn points
           </p>
-          <div class="mt-auto">
+
+          <!-- Rewards Section -->
+          <div *ngIf="bar.rewards && bar.rewards.length > 0" class="mt-4 pt-3 border-top">
+            <h6 class="text-light mb-3" style="font-weight: 600;">Available Rewards:</h6>
+            <div *ngFor="let reward of bar.rewards" class="reward-item mb-2 p-2" style="background: rgba(255,255,255,0.1); border-radius: 6px;">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-light">{{ reward.name }} - {{ reward.pointsCost }} pts</span>
+                <button
+                  class="btn btn-sm btn-warning"
+                  [disabled]="isProcessing || pointsBalance < reward.pointsCost"
+                  (click)="onRedeemReward(bar, reward)"
+                  title="Click to redeem this reward"
+                >
+                  <span *ngIf="!(isProcessing && selectedReward?.id === reward.id)">Redeem</span>
+                  <span *ngIf="isProcessing && selectedReward?.id === reward.id">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    Redeeming...
+                  </span>
+                </button>
+              </div>
+              <small *ngIf="pointsBalance < reward.pointsCost" class="text-danger" style="display: block; margin-top: 4px;">
+                You need {{ reward.pointsCost - pointsBalance }} more points
+              </small>
+            </div>
+          </div>
+
+          <div class="mt-auto pt-3">
             <p style="color: #E0E0E0; font-weight: bold; margin-bottom: 1rem;">Earn 50 RON in points</p>
             <button
               class="btn btn-success w-100 btn-lg"

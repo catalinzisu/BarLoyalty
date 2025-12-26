@@ -1,34 +1,53 @@
 services:
-  # 1. Baza de date
   postgres:
     image: postgres:15-alpine
     container_name: bar-postgres
     environment:
-      POSTGRES_DB: barloyalty
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - bar-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
-  # 2. Microserviciul Python
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: bar-postgres-exporter
+    environment:
+      DATA_SOURCE_NAME: "postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?sslmode=disable"
+    ports:
+      - "9187:9187"
+    networks:
+      - bar-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
   backend-python:
     build: ./BE-python
     container_name: bar-python
     ports:
       - "5000:5000"
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=python-service
+    depends_on:
+      - otel-collector
     networks:
       - bar-network
+    restart: unless-stopped
 
-  # 3. Backend Spring Boot
   backend-spring:
     build: ./BE-springboot
     container_name: bar-spring
@@ -37,19 +56,23 @@ services:
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_NAME=barloyalty
-      - DB_USER=postgres
-      - DB_PASSWORD=password
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
       - PYTHON_MICROSERVICE_URL=http://backend-python:5000
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_SERVICE_NAME=spring-service
     depends_on:
       postgres:
         condition: service_healthy
       backend-python:
         condition: service_started
+      otel-collector:
+        condition: service_started
     networks:
       - bar-network
+    restart: unless-stopped
 
-  # 4. Frontend Angular
   frontend-angular:
     build: ./FE-angular
     container_name: bar-angular
@@ -59,6 +82,98 @@ services:
       - backend-spring
     networks:
       - bar-network
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: bar-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-remote-write-receiver'
+    networks:
+      - bar-network
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: bar-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_INSTALL_PLUGINS=grafana-piechart-panel
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+    networks:
+      - bar-network
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:latest
+    container_name: bar-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - bar-network
+    restart: unless-stopped
+
+  tempo:
+    image: grafana/tempo:latest
+    container_name: bar-tempo
+    ports:
+      - "3200:3200"
+    volumes:
+      - ./observability/tempo-config.yaml:/etc/tempo-config.yaml
+      - tempo-data:/var/tempo
+    command: ["-config.file=/etc/tempo-config.yaml"]
+    networks:
+      - bar-network
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: bar-otel-collector
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "8888:8888"
+      - "8889:8889"
+    volumes:
+      - ./observability/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    depends_on:
+      - tempo
+      - loki
+    networks:
+      - bar-network
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+  tempo-data:
 
 networks:
   bar-network:

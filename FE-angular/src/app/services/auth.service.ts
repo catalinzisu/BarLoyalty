@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { LoginRequest, LoginResponse } from '../models';
+import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../models';
 
 @Injectable({
   providedIn: 'root'
@@ -18,8 +18,15 @@ export class AuthService {
     };
 
     return this.http.post<LoginResponse>(
-      `${this.API_BASE_URL}/auth/login`,
+      `${this.API_BASE_URL}/v1/auth/login`,
       loginRequest
+    );
+  }
+
+  register(registerData: RegisterRequest): Observable<any> {
+    return this.http.post<any>(
+      `${this.API_BASE_URL}/v1/auth/register`,
+      registerData
     );
   }
 

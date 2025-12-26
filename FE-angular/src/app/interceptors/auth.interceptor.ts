@@ -1,46 +1,39 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
-  const currentUserJson = localStorage.getItem('currentUser');
+  // Skip adding Authorization header for login and register endpoints
+  const urlLowerCase = request.url.toLowerCase();
+  const isLoginEndpoint = urlLowerCase.includes('/auth/login');
+  const isRegisterEndpoint = urlLowerCase.includes('/auth/register');
+  const isAuthEndpoint = isLoginEndpoint || isRegisterEndpoint;
+  
+  if (isAuthEndpoint) {
+    console.log('[Auth Interceptor] Skipping Authorization header for auth endpoint:', request.url);
+    return next(request.clone({
+      setHeaders: {
+        'Content-Type': 'application/json'
+      }
+    }));
+  }
+
+  // For all other authenticated requests, add JWT Bearer token if user is logged in
+  const token = localStorage.getItem('token');
   
   let authenticatedRequest = request;
 
-  if (currentUserJson) {
-    try {
-      const currentUser = JSON.parse(currentUserJson);
-      
-      const username = currentUser.username;
-      const password = currentUser.password;
+  if (token) {
+    console.log('[Auth Interceptor] Adding JWT Bearer token for authenticated request');
+    console.log('[Auth Interceptor] Request URL:', request.url);
 
-      if (username && password) {
-        const encodedCredentials = btoa(`${username}:${password}`);
-        
-        console.log('[Auth Interceptor] Encoding credentials for user:', username);
-        console.log('[Auth Interceptor] Adding Basic Auth to request:', request.url);
-
-        authenticatedRequest = request.clone({
-          setHeaders: {
-            Authorization: `Basic ${encodedCredentials}`,
-            'Content-Type': 'application/json'
-          }
-        });
-      } else {
-        console.warn('[Auth Interceptor] currentUser exists but missing username or password');
-        authenticatedRequest = request.clone({
-          setHeaders: {
-            'Content-Type': 'application/json'
-          }
-        });
+    authenticatedRequest = request.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    } catch (error) {
-      console.error('[Auth Interceptor] Error parsing currentUser from localStorage:', error);
-      authenticatedRequest = request.clone({
-        setHeaders: {
-          'Content-Type': 'application/json'
-        }
-      });
-    }
+    });
   } else {
+    // No token available, just add Content-Type header
+    console.log('[Auth Interceptor] No token found, sending unauthenticated request');
     authenticatedRequest = request.clone({
       setHeaders: {
         'Content-Type': 'application/json'
@@ -49,9 +42,9 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
   }
 
   console.log(
-    '[Auth Interceptor] Request URL:', 
+    '[Auth Interceptor] Final request - URL:', 
     authenticatedRequest.url, 
-    '| Authorization header set:', 
+    '| Has Authorization:', 
     !!authenticatedRequest.headers.get('Authorization')
   );
 

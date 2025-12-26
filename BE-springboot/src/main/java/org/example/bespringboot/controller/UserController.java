@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:4200", allowCredentials = "true")
 public class UserController {
@@ -22,6 +22,7 @@ public class UserController {
 
     /**
      * Get user by ID
+     * Requires authentication - JWT token must be provided in Authorization header
      * @param id User ID
      * @return User details if found, 404 if not found
      */
